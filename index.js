@@ -49,8 +49,9 @@ app.post('/question', async (req, res) => {
 
         const data = await response.json();
 
-        // string manipulation to remove last paragraph that is the same for every answer (the disclaimer)
-        data.choices[0].message.content = data.choices[0].message.content.split("\n\n").slice(0, -1).join("\n\n");
+        // string manipulation to remove last paragraph that is the same for every answer (the disclaimer), only if the answer is longer than 1 paragraph
+        if (data.choices[0].message.content.split("\n\n").length > 1)
+            data.choices[0].message.content = data.choices[0].message.content.split("\n\n").slice(0, -1).join("\n\n");
 
         // create sources array (mocked for now)
         const sources = ["https://www.madonnas.it/PISA/CORSI/TP/codice_civile.pdf", "https://platform.openai.com/docs/models/gpt-3-5", "https://en.wikipedia.org/wiki/Sources_of_law?useskin=vector"]
@@ -64,6 +65,7 @@ app.post('/question', async (req, res) => {
             {name : faker.person.fullName(), specialty : specialties[Math.floor(Math.random() * specialties.length)], rating: Math.floor(Math.random()*5 + 1) * 0.5 + 2.5}, 
             {name : faker.person.fullName(), specialty : specialties[Math.floor(Math.random() * specialties.length)], rating: Math.floor(Math.random()*5 + 1) * 0.5 + 2.5}
         ]
+
         if (response.ok) {
             res.send({ answer: data.choices[0].message.content.trim(), sources: sources, professionsists});
         } else {
