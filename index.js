@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const { faker } = require('@faker-js/faker');
 require('dotenv').config();
 
 const app = express();
@@ -16,7 +17,6 @@ app.use(cors());
 
 // POST route to receive a question and return an answer
 app.post('/question', async (req, res) => {
-    console.log("NEW REQUEST");
     const { question } = req.body;
 
     if (!question) {
@@ -36,7 +36,7 @@ app.post('/question', async (req, res) => {
                 "messages": [
                     {
                       "role": "system",
-                      "content": "You are a legal advice AI, fluent in Italian, designed to provide general guidance on legal matters in Italy. You should avoid generating legal documents, offering personalized legal advice, and including disclaimers about the general nature of the advice or the need for personalized legal counsel in your responses. Focus on answering user queries within the scope of general legal information, while keeping your responses specific to the questions asked. Do not mention that you are a bot and this legal advice is not a substitute for a lawyer, as this is explicitly written in the context of the conversation."
+                      "content": "You are a legal advice AI, fluent in Italian, designed to provide general guidance on legal matters in Italy. If the question is not about legal matter, dismiss it politely. You should avoid generating legal documents, offering personalized legal advice, and including disclaimers about the general nature of the advice or the need for personalized legal counsel in your responses. Focus on answering user queries within the scope of general legal information, while keeping your responses specific to the questions asked. Do not mention that you are a bot and this legal advice is not a substitute for a lawyer, as this is explicitly written in the context of the conversation."
                     },
                     {
                       "role": "user",
@@ -52,8 +52,20 @@ app.post('/question', async (req, res) => {
         // string manipulation to remove last paragraph that is the same for every answer (the disclaimer)
         data.choices[0].message.content = data.choices[0].message.content.split("\n\n").slice(0, -1).join("\n\n");
 
+        // create sources array (mocked for now)
+        const sources = ["https://www.madonnas.it/PISA/CORSI/TP/codice_civile.pdf", "https://platform.openai.com/docs/models/gpt-3-5", "https://en.wikipedia.org/wiki/Sources_of_law?useskin=vector"]
+
+        // create a list of professionsist (mocked for now) (actual implementation will require a database)
+        const specialties = ["penale","civile", "famiglia", "lavoro", "immobiliare", "amministrativo", "commerciale", "tributario", "internazionale", "ambientale", "marittimo", "sportivo", "tecnologico", "militare", "sanitario", "culturale", "artistico", "religioso", "alimentare", "animalista", "fiscale", "informatico"]
+        const professionsists = [ 
+            {name : faker.person.fullName(), specialty : specialties[Math.floor(Math.random() * specialties.length)], rating: Math.floor(Math.random()*5 + 1) * 0.5 + 2.5}, 
+            {name : faker.person.fullName(), specialty : specialties[Math.floor(Math.random() * specialties.length)], rating: Math.floor(Math.random()*5 + 1) * 0.5 + 2.5}, 
+            {name : faker.person.fullName(), specialty : specialties[Math.floor(Math.random() * specialties.length)], rating: Math.floor(Math.random()*5 + 1) * 0.5 + 2.5}, 
+            {name : faker.person.fullName(), specialty : specialties[Math.floor(Math.random() * specialties.length)], rating: Math.floor(Math.random()*5 + 1) * 0.5 + 2.5}, 
+            {name : faker.person.fullName(), specialty : specialties[Math.floor(Math.random() * specialties.length)], rating: Math.floor(Math.random()*5 + 1) * 0.5 + 2.5}
+        ]
         if (response.ok) {
-            res.send({ answer: data.choices[0].message.content.trim(), sources: ["https://www.madonnas.it/PISA/CORSI/TP/codice_civile.pdf", "https://platform.openai.com/docs/models/gpt-3-5", ""] });
+            res.send({ answer: data.choices[0].message.content.trim(), sources: sources, professionsists});
         } else {
             res.status(response.status).send({ error: data.error });
         }
